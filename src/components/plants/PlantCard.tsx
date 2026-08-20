@@ -12,7 +12,7 @@ function PlantCard({ plant }: { plant: Plant }) {
   return (
     <Link
       to={`/plant/${plant.id}`}
-      className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+      className="flex flex-col overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900"
     >
       <div className="relative aspect-square w-full bg-green-100 dark:bg-green-950">
         {plant.cover_photo_url ? (

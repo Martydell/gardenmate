@@ -18,6 +18,7 @@ import GardenTypesModal from '../components/profile/GardenTypesModal';
 import AchievementsGrid from '../components/profile/AchievementsGrid';
 import DeleteAccountDialog from '../components/profile/DeleteAccountDialog';
 import NotificationRow from '../components/shared/NotificationRow';
+import PageHeaderBand from '../components/layout/PageHeaderBand';
 import type { GardenType, NotificationPreferences, Theme, User } from '../types';
 
 const DEFAULT_NOTIFICATIONS: NotificationPreferences = {
@@ -47,7 +48,7 @@ function SettingsSection({ title, children }: { title: string; children: ReactNo
   return (
     <div>
       <h2 className="mb-2 px-1 font-semibold">{title}</h2>
-      <div className="rounded-2xl border border-neutral-200 px-4 dark:border-neutral-800">
+      <div className="rounded-2xl border border-neutral-100 bg-white px-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
         {children}
       </div>
     </div>
@@ -205,43 +206,45 @@ function Profile() {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex items-start gap-4 px-4 pt-6">
-        <AvatarUploader
-          avatarUrl={user?.avatar_url ?? null}
-          displayName={user?.name || user?.email || ''}
-          isUploading={isUploadingAvatar}
-          onSelectFile={handleAvatarSelect}
-        />
-        <div className="min-w-0 flex-1 space-y-3 pt-1">
-          <div>
-            <label htmlFor="profile-name" className="mb-1 block text-xs font-medium text-neutral-500">
-              Display name
-            </label>
-            <input
-              id="profile-name"
-              type="text"
-              value={nameDraft}
-              onChange={(e) => setNameDraft(e.target.value)}
-              className="w-full rounded-lg border border-transparent bg-transparent px-0 text-lg font-semibold focus:border-neutral-300 focus:bg-white focus:px-2 focus:py-1 focus:outline-none dark:focus:border-neutral-700 dark:focus:bg-neutral-900"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="profile-garden-name"
-              className="mb-1 block text-xs font-medium text-neutral-500"
-            >
-              Garden name
-            </label>
-            <input
-              id="profile-garden-name"
-              type="text"
-              value={gardenNameDraft}
-              onChange={(e) => setGardenNameDraft(e.target.value)}
-              className="w-full rounded-lg border border-transparent bg-transparent px-0 text-sm text-neutral-600 focus:border-neutral-300 focus:bg-white focus:px-2 focus:py-1 focus:outline-none dark:text-neutral-400 dark:focus:border-neutral-700 dark:focus:bg-neutral-900"
-            />
+      <PageHeaderBand>
+        <div className="flex items-start gap-4">
+          <AvatarUploader
+            avatarUrl={user?.avatar_url ?? null}
+            displayName={user?.name || user?.email || ''}
+            isUploading={isUploadingAvatar}
+            onSelectFile={handleAvatarSelect}
+          />
+          <div className="min-w-0 flex-1 space-y-3 pt-1">
+            <div>
+              <label htmlFor="profile-name" className="mb-1 block text-xs font-medium text-neutral-500">
+                Display name
+              </label>
+              <input
+                id="profile-name"
+                type="text"
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                className="w-full rounded-lg border border-transparent bg-transparent px-0 text-lg font-semibold focus:border-neutral-300 focus:bg-white focus:px-2 focus:py-1 focus:outline-none dark:focus:border-neutral-700 dark:focus:bg-neutral-900"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="profile-garden-name"
+                className="mb-1 block text-xs font-medium text-neutral-500"
+              >
+                Garden name
+              </label>
+              <input
+                id="profile-garden-name"
+                type="text"
+                value={gardenNameDraft}
+                onChange={(e) => setGardenNameDraft(e.target.value)}
+                className="w-full rounded-lg border border-transparent bg-transparent px-0 text-sm text-neutral-600 focus:border-neutral-300 focus:bg-white focus:px-2 focus:py-1 focus:outline-none dark:text-neutral-400 dark:focus:border-neutral-700 dark:focus:bg-neutral-900"
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </PageHeaderBand>
 
       {avatarError && <p className="px-4 text-sm text-red-600">{avatarError}</p>}
 

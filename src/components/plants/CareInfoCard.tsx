@@ -22,7 +22,7 @@ interface CareInfoCardProps {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800">
+    <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
       <h3 className="mb-3 font-semibold">{title}</h3>
       <div className="space-y-2">{children}</div>
     </div>

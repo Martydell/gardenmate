@@ -11,7 +11,7 @@ function PlantListItem({ plant }: { plant: Plant }) {
   return (
     <Link
       to={`/plant/${plant.id}`}
-      className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900"
+      className="flex items-center gap-3 rounded-2xl border border-neutral-100 bg-white p-3 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
     >
       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-green-100 dark:bg-green-950">
         {plant.cover_photo_url ? (

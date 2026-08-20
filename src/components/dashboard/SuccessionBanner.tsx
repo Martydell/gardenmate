@@ -22,7 +22,7 @@ function SuccessionBanner({ tasks, plantById }: SuccessionBannerProps) {
   if (dueSoon.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-purple-200 bg-purple-50 p-4 dark:border-purple-900 dark:bg-purple-950/30">
+    <div className="rounded-2xl border border-purple-200 bg-purple-50 p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] dark:border-purple-900 dark:bg-purple-950/30">
       <div className="flex items-start gap-3">
         <span className="text-xl" aria-hidden="true">
           🌱

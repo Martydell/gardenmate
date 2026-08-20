@@ -47,7 +47,7 @@ function SeasonalCalendarCard({ plants }: SeasonalCalendarCardProps) {
   const monthName = new Date().toLocaleDateString(undefined, { month: 'long' });
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-green-600 to-emerald-800 text-white">
+    <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.15)]">
       <button
         type="button"
         onClick={() => setIsExpanded((v) => !v)}

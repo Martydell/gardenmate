@@ -11,7 +11,7 @@ const NAV_ITEMS = [
 
 function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white/95 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/60 bg-white/70 shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.1)] backdrop-blur-xl dark:border-neutral-800/60 dark:bg-neutral-950/70">
       <ul className="mx-auto flex max-w-md items-stretch justify-between px-2">
         {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
           <li key={to} className="flex-1">
@@ -21,7 +21,7 @@ function BottomNav() {
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 py-2 text-xs ${
                   isActive
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-brand-600 dark:text-brand-400'
                     : 'text-neutral-500 dark:text-neutral-400'
                 }`
               }

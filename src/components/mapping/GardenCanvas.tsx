@@ -672,7 +672,7 @@ function GardenCanvas({ space }: GardenCanvasProps) {
         </div>
       )}
 
-      <div ref={containerRef} className="relative w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
+      <div ref={containerRef} className="relative w-full overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
         <canvas ref={canvasElRef} />
         {irrigationVisible && (
           <div className="pointer-events-none absolute inset-0 bg-blue-500/10" />

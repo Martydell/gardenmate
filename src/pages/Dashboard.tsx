@@ -10,6 +10,7 @@ import { useCommunityPosts } from '../hooks/useCommunityPosts';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import WeatherWidget from '../components/dashboard/WeatherWidget';
 import SuccessionBanner from '../components/dashboard/SuccessionBanner';
+import PageHeaderBand from '../components/layout/PageHeaderBand';
 import HarvestStatCard from '../components/dashboard/HarvestStatCard';
 import SeasonalCalendarCard from '../components/dashboard/SeasonalCalendarCard';
 import InspireSection from '../components/dashboard/InspireSection';
@@ -108,12 +109,12 @@ function Dashboard() {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="px-4 pt-6">
+      <PageHeaderBand>
         <h1 className="text-2xl font-semibold">
           {greeting}, {firstName} 🌱
         </h1>
         {user?.garden_name && <p className="text-sm text-neutral-500">{user.garden_name}</p>}
-      </div>
+      </PageHeaderBand>
 
       <div className="px-4">
         <WeatherWidget weather={weather} status={weatherStatus} onRetry={retryWeather} />
@@ -123,7 +124,7 @@ function Dashboard() {
         {tasksLoading ? (
           <Skeleton className="h-28" />
         ) : (
-          <div className="rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800">
+          <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center justify-between">
               <div className="flex gap-5">
                 <div>
@@ -213,7 +214,7 @@ function Dashboard() {
               return (
                 <div
                   key={log.id}
-                  className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-2 dark:border-neutral-800"
+                  className="flex items-center gap-3 rounded-xl border border-neutral-100 bg-white px-3 py-2 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
                 >
                   <span className="text-lg" aria-hidden="true">
                     {meta.emoji}
@@ -254,7 +255,7 @@ function Dashboard() {
           <button
             type="button"
             onClick={() => setIsAddPlantOpen(true)}
-            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-200 py-4 text-sm font-medium dark:border-neutral-800"
+            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-100 bg-white py-4 text-sm font-medium shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
           >
             <span className="text-2xl" aria-hidden="true">
               ➕
@@ -264,7 +265,7 @@ function Dashboard() {
           <button
             type="button"
             onClick={() => navigate('/identify')}
-            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-200 py-4 text-sm font-medium dark:border-neutral-800"
+            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-100 bg-white py-4 text-sm font-medium shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
           >
             <span className="text-2xl" aria-hidden="true">
               🔍
@@ -274,7 +275,7 @@ function Dashboard() {
           <button
             type="button"
             onClick={() => navigate('/map')}
-            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-200 py-4 text-sm font-medium dark:border-neutral-800"
+            className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-100 bg-white py-4 text-sm font-medium shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
           >
             <span className="text-2xl" aria-hidden="true">
               🗺️

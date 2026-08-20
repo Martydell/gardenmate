@@ -10,6 +10,7 @@ import { careUrgencyRank } from '../lib/careSchedule';
 import PlantCard from '../components/plants/PlantCard';
 import PlantCardSkeleton from '../components/plants/PlantCardSkeleton';
 import PlantListItem from '../components/plants/PlantListItem';
+import PageHeaderBand from '../components/layout/PageHeaderBand';
 import AddPlantModal from '../components/plants/AddPlantModal';
 import type { Plant, PlantCategory } from '../types';
 
@@ -98,7 +99,7 @@ function Catalogue() {
 
   return (
     <div className="pb-24">
-      <div className="sticky top-0 z-10 space-y-3 border-b border-neutral-200 bg-white/95 p-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95">
+      <PageHeaderBand>
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">My Garden</h1>
           {catalogueTab === 'wishlist' && (
@@ -112,7 +113,9 @@ function Catalogue() {
             </button>
           )}
         </div>
+      </PageHeaderBand>
 
+      <div className="sticky top-0 z-10 space-y-3 border-b border-neutral-200 bg-white/95 p-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95">
         <div className="flex rounded-xl border border-neutral-300 p-0.5 dark:border-neutral-700">
           <button
             type="button"

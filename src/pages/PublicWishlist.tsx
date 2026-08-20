@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { usePublicWishlist } from '../hooks/usePublicWishlist';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import PageHeaderBand from '../components/layout/PageHeaderBand';
 import type { Plant } from '../types';
 
 function displayName(plant: Plant): string {
@@ -27,58 +28,62 @@ function PublicWishlist() {
   const { plants, isLoading, error } = usePublicWishlist(userId);
 
   return (
-    <div className="mx-auto min-h-svh max-w-lg p-4 pb-10">
-      <div className="py-6 text-center">
-        <span className="text-4xl" aria-hidden="true">
-          🌿
-        </span>
-        <h1 className="mt-2 text-2xl font-semibold">Plant Wishlist</h1>
-        <p className="mt-1 text-sm text-neutral-500">Shared from GardenMate</p>
+    <div className="min-h-svh pb-10">
+      <PageHeaderBand>
+        <div className="mx-auto max-w-lg text-center">
+          <span className="text-4xl" aria-hidden="true">
+            🌿
+          </span>
+          <h1 className="mt-2 text-2xl font-semibold">Plant Wishlist</h1>
+          <p className="mt-1 text-sm text-neutral-500">Shared from GardenMate</p>
+        </div>
+      </PageHeaderBand>
+
+      <div className="mx-auto max-w-lg p-4">
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <WishlistCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : plants.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <span className="text-5xl">🌱</span>
+            <p className="text-neutral-500">This wishlist is empty right now.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            {plants.map((plant) => (
+              <div
+                key={plant.id}
+                className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900"
+              >
+                <div className="aspect-square w-full bg-green-100 dark:bg-green-950">
+                  {plant.cover_photo_url ? (
+                    <img
+                      src={plant.cover_photo_url}
+                      alt={displayName(plant)}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-4xl">🌿</div>
+                  )}
+                </div>
+                <div className="p-3">
+                  <p className="truncate font-medium">{displayName(plant)}</p>
+                  {plant.scientific_name && (
+                    <p className="truncate text-xs italic text-neutral-500">{plant.scientific_name}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p className="mt-10 text-center text-xs text-neutral-400">Built with GardenMate 🌿</p>
       </div>
-
-      {error && <p className="text-center text-sm text-red-600">{error}</p>}
-
-      {isLoading ? (
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <WishlistCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : plants.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center">
-          <span className="text-5xl">🌱</span>
-          <p className="text-neutral-500">This wishlist is empty right now.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {plants.map((plant) => (
-            <div
-              key={plant.id}
-              className="overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
-            >
-              <div className="aspect-square w-full bg-green-100 dark:bg-green-950">
-                {plant.cover_photo_url ? (
-                  <img
-                    src={plant.cover_photo_url}
-                    alt={displayName(plant)}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-4xl">🌿</div>
-                )}
-              </div>
-              <div className="p-3">
-                <p className="truncate font-medium">{displayName(plant)}</p>
-                {plant.scientific_name && (
-                  <p className="truncate text-xs italic text-neutral-500">{plant.scientific_name}</p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <p className="mt-10 text-center text-xs text-neutral-400">Built with GardenMate 🌿</p>
     </div>
   );
 }

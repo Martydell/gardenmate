@@ -568,8 +568,8 @@ function Onboarding() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-neutral-50 p-4 dark:bg-neutral-950">
-      <div className="flex min-h-[calc(100svh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white shadow-xl dark:bg-neutral-900 sm:min-h-[42rem]">
+    <div className="flex min-h-svh items-center justify-center p-4">
+      <div className="flex min-h-[calc(100svh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white shadow-[0_8px_40px_-8px_rgba(0,0,0,0.15)] dark:bg-neutral-900 sm:min-h-[42rem]">
         <ProgressBar step={step} total={TOTAL_STEPS} />
         <div className="flex flex-1 flex-col py-6">{renderStep()}</div>
         <div className="border-t border-neutral-200 p-6 dark:border-neutral-800">

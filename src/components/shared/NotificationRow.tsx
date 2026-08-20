@@ -10,7 +10,7 @@ interface NotificationRowProps {
 
 function NotificationRow({ label, enabled, onToggle, time, onTimeChange }: NotificationRowProps) {
   return (
-    <div className="rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800">
+    <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
       <div className="flex items-center justify-between">
         <span className="font-medium">{label}</span>
         <Toggle checked={enabled} onChange={onToggle} label={label} />

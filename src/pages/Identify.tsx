@@ -1,17 +1,20 @@
 import { formatDate } from '../lib/careSchedule';
 import { useIdentificationLog } from '../hooks/useIdentificationLog';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import PageHeaderBand from '../components/layout/PageHeaderBand';
 
 function Identify() {
   useDocumentTitle('Identify — GardenMate');
   const { logs, isLoading } = useIdentificationLog();
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">Identify</h1>
-      <p className="mt-2 text-neutral-500">Snap a photo to identify a plant.</p>
+    <div className="pb-6">
+      <PageHeaderBand>
+        <h1 className="text-2xl font-semibold">Identify</h1>
+        <p className="mt-2 text-neutral-500">Snap a photo to identify a plant.</p>
+      </PageHeaderBand>
 
-      <div className="mt-8">
+      <div className="px-4 pt-2">
         <h2 className="mb-2 font-semibold">ID Log</h2>
         {isLoading ? (
           <div className="space-y-2">
@@ -32,7 +35,7 @@ function Identify() {
             {logs.map((log) => (
               <li
                 key={log.id}
-                className="flex items-center gap-3 rounded-2xl border border-neutral-200 p-3 dark:border-neutral-800"
+                className="flex items-center gap-3 rounded-2xl border border-neutral-100 bg-white p-3 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <img src={log.photo_url} alt="" className="h-12 w-12 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1">

@@ -7,7 +7,7 @@ interface PostCardProps {
 
 function PostCard({ post, onLike }: PostCardProps) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
+    <div className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
       <div className="grid grid-cols-2 gap-px bg-neutral-200 dark:bg-neutral-800">
         <img src={post.before_photo_url} alt="Before" className="aspect-square w-full object-cover" />
         <img src={post.after_photo_url} alt="After" className="aspect-square w-full object-cover" />

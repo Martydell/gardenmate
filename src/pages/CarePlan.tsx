@@ -6,6 +6,7 @@ import { useCareTasks } from '../hooks/useCareTasks';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { TASK_TYPE_META, formatTaskDate, todayDateString } from '../lib/careTaskMeta';
 import CreateCareTaskModal from '../components/care/CreateCareTaskModal';
+import PageHeaderBand from '../components/layout/PageHeaderBand';
 import type { CareTask, CareTaskType, Plant } from '../types';
 
 type TabKey = 'today' | 'calendar';
@@ -30,7 +31,7 @@ function TaskItem({
 }) {
   const meta = TASK_TYPE_META[task.task_type];
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-neutral-200 p-3 dark:border-neutral-800">
+    <div className="flex items-center gap-3 rounded-2xl border border-neutral-100 bg-white p-3 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900">
       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-green-100 dark:bg-green-950">
         {plant?.cover_photo_url ? (
           <img src={plant.cover_photo_url} alt="" className="h-full w-full object-cover" />
@@ -253,9 +254,9 @@ function CarePlan() {
 
   return (
     <div className="pb-24">
-      <div className="p-4">
+      <PageHeaderBand>
         <h1 className="text-2xl font-semibold">Care Plan</h1>
-      </div>
+      </PageHeaderBand>
 
       {filterPlant && (
         <div className="mx-4 mb-3 flex items-center justify-between rounded-xl bg-green-50 px-3 py-2 text-sm dark:bg-green-950/40">

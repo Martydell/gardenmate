@@ -4,6 +4,7 @@ import { useSpaces } from '../hooks/useSpaces';
 import type { NewSpaceInput } from '../hooks/useSpaces';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { SPACE_TYPE_META } from '../lib/spaceMeta';
+import PageHeaderBand from '../components/layout/PageHeaderBand';
 import AddSpaceModal from '../components/mapping/AddSpaceModal';
 import GardenCanvas from '../components/mapping/GardenCanvas';
 import PhotoAnglesTab from '../components/mapping/PhotoAnglesTab';
@@ -27,12 +28,12 @@ function GardenMap() {
 
   return (
     <div className="pb-6">
-      <div className="p-4">
+      <PageHeaderBand>
         <h1 className="text-2xl font-semibold">Garden Map</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Lay out your spaces and pin your plants where they live.
         </p>
-      </div>
+      </PageHeaderBand>
 
       <div className="flex gap-3 overflow-x-auto px-4 pb-3">
         {spaces.map((space) => {

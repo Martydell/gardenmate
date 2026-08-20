@@ -19,7 +19,7 @@ function HarvestStatCard({ entries }: HarvestStatCardProps) {
   ].filter(Boolean);
 
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] dark:border-amber-900 dark:bg-amber-950/30">
       <p className="text-sm font-medium text-amber-900 dark:text-amber-300">🧺 This season's harvest</p>
       {totalWeightKg > 0 ? (
         <p className="mt-1 text-2xl font-semibold text-amber-900 dark:text-amber-300">

@@ -56,7 +56,7 @@ function QuickActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-200 py-3 text-xs font-medium disabled:opacity-50 dark:border-neutral-800"
+      className="flex flex-col items-center gap-1 rounded-2xl border border-neutral-100 bg-white py-3 text-xs font-medium shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-900"
     >
       <span className="text-2xl">{loading ? '⏳' : emoji}</span>
       {label}
@@ -145,7 +145,7 @@ function CareScheduleCard({
   nextValue: string;
 }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800">
+    <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
       <div className="flex items-center gap-2">
         <span className="text-xl">{emoji}</span>
         <span className="font-medium">{title}</span>
@@ -547,7 +547,7 @@ function PlantDetail() {
               {logs.map((log) => (
                 <li
                   key={log.id}
-                  className="flex items-start gap-3 rounded-2xl border border-neutral-200 p-3 dark:border-neutral-800"
+                  className="flex items-start gap-3 rounded-2xl border border-neutral-100 bg-white p-3 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
                 >
                   <span className="text-xl">{CARE_ACTION_META[log.action_type].emoji}</span>
                   <div className="min-w-0 flex-1">

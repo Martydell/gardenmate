@@ -1,17 +1,75 @@
+import { useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { Camera } from 'lucide-react';
 import { formatDate } from '../lib/careSchedule';
 import { useIdentificationLog } from '../hooks/useIdentificationLog';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useUserStore } from '../stores/userStore';
+import { uploadIdentifyPhoto } from '../lib/supabase';
+import { identifyPlant } from '../lib/plantId';
+import { notifyError, notifySuccess } from '../lib/errorHandling';
 import PageHeaderBand from '../components/layout/PageHeaderBand';
 
 function Identify() {
   useDocumentTitle('Identify — GardenMate');
-  const { logs, isLoading } = useIdentificationLog();
+  const userId = useUserStore((state) => state.user?.id);
+  const { logs, isLoading, addIdentification } = useIdentificationLog();
+  const [isIdentifying, setIsIdentifying] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleCapture(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !userId) return;
+
+    setIsIdentifying(true);
+    try {
+      const photoUrl = await uploadIdentifyPhoto(userId, file);
+      if (!photoUrl) {
+        notifyError('Could not upload that photo. Please try again.');
+        return;
+      }
+
+      const result = await identifyPlant(file);
+      if (!result) {
+        notifyError("Couldn't identify that plant — try a clearer, closer photo.");
+        return;
+      }
+
+      const saved = await addIdentification(photoUrl, result.name, result.probability);
+      if (saved) {
+        notifySuccess(`Identified as ${result.name}! 🌿`);
+      }
+    } catch {
+      notifyError();
+    } finally {
+      setIsIdentifying(false);
+    }
+  }
 
   return (
     <div className="pb-6">
       <PageHeaderBand>
         <h1 className="text-2xl font-semibold">Identify</h1>
         <p className="mt-2 text-neutral-500">Snap a photo to identify a plant.</p>
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isIdentifying}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 font-medium text-white disabled:opacity-60"
+        >
+          <Camera className="h-5 w-5" aria-hidden="true" />
+          {isIdentifying ? 'Identifying…' : 'Take a Photo'}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleCapture}
+        />
       </PageHeaderBand>
 
       <div className="px-4 pt-2">

@@ -1,7 +1,5 @@
--- Plant identification log. Run once in your Supabase project's SQL
--- editor. Note: Identify.tsx's camera-capture + identification-API flow
--- itself is not built yet — this table backs the ID Log list/empty state
--- only, so it's ready to receive rows once that capture flow ships.
+-- Plant identification log + storage bucket for photos captured on the
+-- Identify page. Run once in your Supabase project's SQL editor.
 
 create table if not exists public.identification_log (
   id uuid primary key default gen_random_uuid(),
@@ -27,3 +25,36 @@ create policy "Users can delete their own identifications"
   using (auth.uid() = user_id);
 
 create index if not exists identification_log_user_id_idx on public.identification_log (user_id);
+
+-- Storage bucket for plant identification snapshots. The app uploads to
+-- `${auth.uid()}/<filename>`, so policies scope access by matching the
+-- first path segment to the requesting user's id — same convention as the
+-- plant-photos, space-photos, and avatar-photos buckets.
+insert into storage.buckets (id, name, public)
+values ('identify-photos', 'identify-photos', true)
+on conflict (id) do nothing;
+
+create policy "Users can upload their own identify photos"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'identify-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "Users can update their own identify photos"
+  on storage.objects for update
+  using (
+    bucket_id = 'identify-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "Users can delete their own identify photos"
+  on storage.objects for delete
+  using (
+    bucket_id = 'identify-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "Anyone can view identify photos"
+  on storage.objects for select
+  using (bucket_id = 'identify-photos');

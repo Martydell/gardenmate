@@ -17,6 +17,8 @@ export const SPACE_PHOTOS_BUCKET = 'space-photos';
 
 export const AVATAR_PHOTOS_BUCKET = 'avatar-photos';
 
+export const IDENTIFY_PHOTOS_BUCKET = 'identify-photos';
+
 export async function uploadPlantPhoto(userId: string, file: File): Promise<string | null> {
   const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
   const { error } = await supabase.storage.from(PLANT_PHOTOS_BUCKET).upload(path, file);
@@ -38,5 +40,13 @@ export async function uploadSpacePhoto(userId: string, file: File): Promise<stri
   const { error } = await supabase.storage.from(SPACE_PHOTOS_BUCKET).upload(path, file);
   if (error) return null;
   const { data } = supabase.storage.from(SPACE_PHOTOS_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function uploadIdentifyPhoto(userId: string, file: File): Promise<string | null> {
+  const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
+  const { error } = await supabase.storage.from(IDENTIFY_PHOTOS_BUCKET).upload(path, file);
+  if (error) return null;
+  const { data } = supabase.storage.from(IDENTIFY_PHOTOS_BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }

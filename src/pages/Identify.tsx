@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Camera, ChevronRight } from 'lucide-react';
+import { Camera, ChevronRight, Upload } from 'lucide-react';
 import { formatDate } from '../lib/careSchedule';
 import { useIdentificationLog } from '../hooks/useIdentificationLog';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -16,7 +16,8 @@ function Identify() {
   const userId = useUserStore((state) => state.user?.id);
   const { logs, isLoading, addIdentification } = useIdentificationLog();
   const [isIdentifying, setIsIdentifying] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const libraryInputRef = useRef<HTMLInputElement>(null);
 
   async function handleCapture(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -51,20 +52,38 @@ function Identify() {
         <h1 className="text-2xl font-semibold">Identify</h1>
         <p className="mt-2 text-neutral-500">Snap a photo to identify a plant.</p>
 
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isIdentifying}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 font-medium text-white disabled:opacity-60"
-        >
-          <Camera className="h-5 w-5" aria-hidden="true" />
-          {isIdentifying ? 'Identifying…' : 'Take a Photo'}
-        </button>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            disabled={isIdentifying}
+            className="flex items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 font-medium text-white disabled:opacity-60"
+          >
+            <Camera className="h-5 w-5" aria-hidden="true" />
+            {isIdentifying ? 'Identifying…' : 'Take a Photo'}
+          </button>
+          <button
+            type="button"
+            onClick={() => libraryInputRef.current?.click()}
+            disabled={isIdentifying}
+            className="flex items-center justify-center gap-2 rounded-xl border border-brand-600 py-3 font-medium text-brand-700 disabled:opacity-60 dark:text-brand-400"
+          >
+            <Upload className="h-5 w-5" aria-hidden="true" />
+            Upload a Photo
+          </button>
+        </div>
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
+          className="hidden"
+          onChange={handleCapture}
+        />
+        <input
+          ref={libraryInputRef}
+          type="file"
+          accept="image/*"
           className="hidden"
           onChange={handleCapture}
         />

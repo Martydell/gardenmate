@@ -68,9 +68,22 @@ interface AddPlantModalProps {
   plant?: Plant | null;
   onAdd: (input: NewPlantInput) => Promise<Plant | null>;
   onUpdate?: (id: string, updates: Partial<Plant>) => Promise<Plant | null>;
+  // Pre-fills a fresh (non-edit) form — e.g. from an Identify result — with
+  // a name/photo already known rather than starting blank.
+  initialValues?: { commonName?: string; coverPhotoUrl?: string | null };
+  // Saves the new plant straight to the wishlist instead of My Plants.
+  defaultIsWishlist?: boolean;
 }
 
-function AddPlantModal({ open, onClose, plant, onAdd, onUpdate }: AddPlantModalProps) {
+function AddPlantModal({
+  open,
+  onClose,
+  plant,
+  onAdd,
+  onUpdate,
+  initialValues,
+  defaultIsWishlist,
+}: AddPlantModalProps) {
   const userId = useUserStore((state) => state.user?.id);
   const [form, setForm] = useState<FormState>(initialFormState);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -88,7 +101,15 @@ function AddPlantModal({ open, onClose, plant, onAdd, onUpdate }: AddPlantModalP
   if (open !== syncedFor.open || plant !== syncedFor.plant) {
     setSyncedFor({ open, plant });
     if (open) {
-      setForm(plant ? plantToFormState(plant) : initialFormState);
+      setForm(
+        plant
+          ? plantToFormState(plant)
+          : {
+              ...initialFormState,
+              commonName: initialValues?.commonName ?? initialFormState.commonName,
+              coverPhotoUrl: initialValues?.coverPhotoUrl ?? initialFormState.coverPhotoUrl,
+            },
+      );
       setErrors({});
       setSubmitError(null);
       setPhotoError(null);
@@ -164,7 +185,7 @@ function AddPlantModal({ open, onClose, plant, onAdd, onUpdate }: AddPlantModalP
             soil_type: null,
             last_watered: null,
             last_fed: null,
-            is_wishlist: false,
+            is_wishlist: defaultIsWishlist ?? false,
             photos: form.coverPhotoUrl ? [form.coverPhotoUrl] : [],
             pet_safety: 'unknown',
             is_edible: form.isEdible,
@@ -196,7 +217,9 @@ function AddPlantModal({ open, onClose, plant, onAdd, onUpdate }: AddPlantModalP
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">{isEditMode ? 'Edit plant' : 'Add a plant'}</h2>
+          <h2 className="text-xl font-semibold">
+            {isEditMode ? 'Edit plant' : defaultIsWishlist ? 'Save to wishlist' : 'Add a plant'}
+          </h2>
           <button
             type="button"
             onClick={resetAndClose}
@@ -396,7 +419,13 @@ function AddPlantModal({ open, onClose, plant, onAdd, onUpdate }: AddPlantModalP
             disabled={isSubmitting || isUploadingPhoto}
             className="w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:opacity-60"
           >
-            {isSubmitting ? 'Saving…' : isEditMode ? 'Save changes' : 'Add plant'}
+            {isSubmitting
+              ? 'Saving…'
+              : isEditMode
+                ? 'Save changes'
+                : defaultIsWishlist
+                  ? 'Save to wishlist'
+                  : 'Add plant'}
           </button>
         </form>
       </div>

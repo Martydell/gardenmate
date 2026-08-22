@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { Camera } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Camera, ChevronRight } from 'lucide-react';
 import { formatDate } from '../lib/careSchedule';
 import { useIdentificationLog } from '../hooks/useIdentificationLog';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -91,17 +92,20 @@ function Identify() {
         ) : (
           <ul className="space-y-2">
             {logs.map((log) => (
-              <li
-                key={log.id}
-                className="flex items-center gap-3 rounded-2xl border border-neutral-100 bg-white p-3 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
-              >
-                <img src={log.photo_url} alt="" className="h-12 w-12 rounded-lg object-cover" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{log.result_name}</p>
-                  <p className="text-xs text-neutral-500">
-                    {Math.round(log.confidence * 100)}% confident · {formatDate(log.created_at)}
-                  </p>
-                </div>
+              <li key={log.id}>
+                <Link
+                  to={`/identify/${log.id}`}
+                  className="flex items-center gap-3 rounded-2xl border border-neutral-100 bg-white p-3 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.06)] dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                  <img src={log.photo_url} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{log.result_name}</p>
+                    <p className="text-xs text-neutral-500">
+                      {Math.round(log.confidence * 100)}% confident · {formatDate(log.created_at)}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400" aria-hidden="true" />
+                </Link>
               </li>
             ))}
           </ul>

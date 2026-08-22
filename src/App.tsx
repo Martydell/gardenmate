@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Catalogue from './pages/Catalogue';
 import PlantDetail from './pages/PlantDetail';
 import Identify from './pages/Identify';
+import IdentifyResult from './pages/IdentifyResult';
 import CarePlan from './pages/CarePlan';
 import Profile from './pages/Profile';
 import PublicWishlist from './pages/PublicWishlist';
@@ -77,6 +78,7 @@ function App() {
             }
           />
           <Route path="/identify" element={<Identify />} />
+          <Route path="/identify/:logId" element={<IdentifyResult />} />
           <Route path="/care" element={<CarePlan />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>

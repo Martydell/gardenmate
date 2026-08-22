@@ -26,10 +26,7 @@ function Identify() {
     setIsIdentifying(true);
     try {
       const photoUrl = await uploadIdentifyPhoto(userId, file);
-      if (!photoUrl) {
-        notifyError('Could not upload that photo. Please try again.');
-        return;
-      }
+      if (!photoUrl) return;
 
       const result = await identifyPlant(file);
       if (!result) {

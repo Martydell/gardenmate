@@ -136,7 +136,6 @@ function Profile() {
     const url = await uploadAvatarPhoto(user.id, file);
     if (!url) {
       setIsUploadingAvatar(false);
-      setAvatarError('Something went wrong uploading your photo. Please try again.');
       return;
     }
     const success = await persistUserMetadata({ avatar_url: url });

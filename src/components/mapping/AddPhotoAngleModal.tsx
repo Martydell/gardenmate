@@ -80,7 +80,6 @@ function AddPhotoAngleModal({ open, onClose, onAdd, defaultPlantCategory }: AddP
 
     const photoUrl = await uploadSpacePhoto(userId, file);
     if (!photoUrl) {
-      setSubmitError('Could not upload photo. Please try again.');
       setIsSubmitting(false);
       return;
     }

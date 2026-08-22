@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { X } from 'lucide-react';
+import { ScanSearch, X } from 'lucide-react';
 import { uploadSpacePhoto } from '../../lib/supabase';
 import { useUserStore } from '../../stores/userStore';
+import { usePlants } from '../../hooks/usePlants';
 import type { NewPhotoAngleInput } from '../../hooks/useSpacePhotoAngles';
-import type { SpacePhotoAngleLabel } from '../../types';
+import type { SpacePhotoAngleLabel, PlantCategory } from '../../types';
+import MultiPlantIdentifyModal from './MultiPlantIdentifyModal';
 
 const ANGLE_LABEL_OPTIONS: SpacePhotoAngleLabel[] = [
   'North wall',
@@ -20,16 +22,19 @@ interface AddPhotoAngleModalProps {
   open: boolean;
   onClose: () => void;
   onAdd: (input: NewPhotoAngleInput) => Promise<unknown>;
+  defaultPlantCategory?: PlantCategory;
 }
 
-function AddPhotoAngleModal({ open, onClose, onAdd }: AddPhotoAngleModalProps) {
+function AddPhotoAngleModal({ open, onClose, onAdd, defaultPlantCategory }: AddPhotoAngleModalProps) {
   const userId = useUserStore((state) => state.user?.id);
+  const { addPlant } = usePlants();
   const [label, setLabel] = useState<SpacePhotoAngleLabel>('North wall');
   const [customLabel, setCustomLabel] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isIdentifyOpen, setIsIdentifyOpen] = useState(false);
 
   const [syncedOpen, setSyncedOpen] = useState(open);
   if (open !== syncedOpen) {
@@ -95,6 +100,7 @@ function AddPhotoAngleModal({ open, onClose, onAdd }: AddPhotoAngleModalProps) {
   }
 
   return (
+    <>
     <div
       className={`fixed inset-0 z-50 flex items-end justify-center bg-black/40 transition-opacity ${
         open ? 'opacity-100' : 'pointer-events-none opacity-0'
@@ -160,7 +166,17 @@ function AddPhotoAngleModal({ open, onClose, onAdd }: AddPhotoAngleModalProps) {
               <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </label>
             {previewUrl && (
-              <img src={previewUrl} alt="Preview" className="mt-2 h-32 w-full rounded-xl object-cover" />
+              <>
+                <img src={previewUrl} alt="Preview" className="mt-2 h-32 w-full rounded-xl object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setIsIdentifyOpen(true)}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-600 py-2.5 text-sm font-medium text-brand-700 dark:text-brand-400"
+                >
+                  <ScanSearch className="h-4 w-4" aria-hidden="true" />
+                  Identify plants in this photo
+                </button>
+              </>
             )}
           </div>
 
@@ -177,6 +193,15 @@ function AddPhotoAngleModal({ open, onClose, onAdd }: AddPhotoAngleModalProps) {
         </div>
       </div>
     </div>
+
+    <MultiPlantIdentifyModal
+      open={isIdentifyOpen}
+      onClose={() => setIsIdentifyOpen(false)}
+      sourceFile={file}
+      onAdd={addPlant}
+      defaultCategory={defaultPlantCategory}
+    />
+    </>
   );
 }
 

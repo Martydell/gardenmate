@@ -1,4 +1,4 @@
-import type { GardenSpaceType, GroundCoverType, WaterNeedLevel } from '../types';
+import type { GardenSpaceType, GroundCoverType, PlantCategory, WaterNeedLevel } from '../types';
 
 export const SPACE_TYPE_META: Record<
   GardenSpaceType,
@@ -17,6 +17,13 @@ export const SPACE_TYPE_OPTIONS: { value: GardenSpaceType; label: string }[] = (
 
 export function isOutdoorSpaceType(type: GardenSpaceType): boolean {
   return SPACE_TYPE_META[type].outdoor;
+}
+
+// Best-effort default for plants auto-created from a space's photo — the
+// user can always change the category afterward on the plant itself.
+export function plantCategoryForSpaceType(type: GardenSpaceType): PlantCategory {
+  if (type === 'balcony') return 'balcony';
+  return SPACE_TYPE_META[type].templateCategory;
 }
 
 export const GROUND_COVER_META: Record<GroundCoverType, { label: string; color: string }> = {

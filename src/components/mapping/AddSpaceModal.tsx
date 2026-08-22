@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, ScanSearch, X } from 'lucide-react';
 import { supabase, SPACE_PHOTOS_BUCKET } from '../../lib/supabase';
 import { useUserStore } from '../../stores/userStore';
-import { SPACE_TYPE_META, SPACE_TYPE_OPTIONS } from '../../lib/spaceMeta';
+import { usePlants } from '../../hooks/usePlants';
+import { SPACE_TYPE_META, SPACE_TYPE_OPTIONS, plantCategoryForSpaceType } from '../../lib/spaceMeta';
 import { SPACE_TEMPLATES } from '../../lib/spaceTemplates';
 import type { TemplateId } from '../../lib/spaceTemplates';
 import type { NewSpaceInput } from '../../hooks/useSpaces';
 import type { GardenSpace, GardenSpaceType } from '../../types';
+import MultiPlantIdentifyModal from './MultiPlantIdentifyModal';
 
 interface FormState {
   name: string;
@@ -15,6 +17,7 @@ interface FormState {
   backgroundMode: 'template' | 'photo';
   templateId: TemplateId;
   photoUrl: string | null;
+  photoFile: File | null;
 }
 
 function initialFormFor(type: GardenSpaceType): FormState {
@@ -26,6 +29,7 @@ function initialFormFor(type: GardenSpaceType): FormState {
     backgroundMode: 'template',
     templateId: firstTemplate.id,
     photoUrl: null,
+    photoFile: null,
   };
 }
 
@@ -37,12 +41,14 @@ interface AddSpaceModalProps {
 
 function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
   const userId = useUserStore((state) => state.user?.id);
+  const { addPlant } = usePlants();
   const [form, setForm] = useState<FormState>(() => initialFormFor('indoor_room'));
   const [nameError, setNameError] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isIdentifyOpen, setIsIdentifyOpen] = useState(false);
 
   const [syncedOpen, setSyncedOpen] = useState(open);
   if (open !== syncedOpen) {
@@ -100,7 +106,7 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
     }
 
     const { data } = supabase.storage.from(SPACE_PHOTOS_BUCKET).getPublicUrl(path);
-    updateForm({ photoUrl: data.publicUrl });
+    updateForm({ photoUrl: data.publicUrl, photoFile: file });
     setIsUploadingPhoto(false);
   }
 
@@ -141,6 +147,7 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
   );
 
   return (
+    <>
     <div
       className={`fixed inset-0 z-50 flex items-end justify-center bg-black/40 transition-opacity ${
         open ? 'opacity-100' : 'pointer-events-none opacity-0'
@@ -274,11 +281,21 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
                 />
               </label>
               {form.photoUrl && (
-                <img
-                  src={form.photoUrl}
-                  alt="Space preview"
-                  className="mt-2 h-32 w-full rounded-xl object-cover"
-                />
+                <>
+                  <img
+                    src={form.photoUrl}
+                    alt="Space preview"
+                    className="mt-2 h-32 w-full rounded-xl object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsIdentifyOpen(true)}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-600 py-2.5 text-sm font-medium text-brand-700 dark:text-brand-400"
+                  >
+                    <ScanSearch className="h-4 w-4" aria-hidden="true" />
+                    Identify plants in this photo
+                  </button>
+                </>
               )}
               {photoError && <p className="mt-1 text-sm text-red-600">{photoError}</p>}
             </div>
@@ -296,6 +313,15 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
         </form>
       </div>
     </div>
+
+    <MultiPlantIdentifyModal
+      open={isIdentifyOpen}
+      onClose={() => setIsIdentifyOpen(false)}
+      sourceFile={form.photoFile}
+      onAdd={addPlant}
+      defaultCategory={plantCategoryForSpaceType(form.type)}
+    />
+    </>
   );
 }
 

@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Trash2, X } from 'lucide-react';
 import { useSpacePhotoAngles } from '../../hooks/useSpacePhotoAngles';
+import { plantCategoryForSpaceType } from '../../lib/spaceMeta';
 import AddPhotoAngleModal from './AddPhotoAngleModal';
 import PlantPinPopup from './PlantPinPopup';
 import type { GardenSpace, Plant, SpacePhotoAngle, SpacePhotoAnglePin } from '../../types';
@@ -184,7 +185,12 @@ function PhotoAnglesTab({ space }: PhotoAnglesTabProps) {
         </p>
       )}
 
-      <AddPhotoAngleModal open={isAddOpen} onClose={() => setIsAddOpen(false)} onAdd={addPhotoAngle} />
+      <AddPhotoAngleModal
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onAdd={addPhotoAngle}
+        defaultPlantCategory={plantCategoryForSpaceType(space.type)}
+      />
     </div>
   );
 }

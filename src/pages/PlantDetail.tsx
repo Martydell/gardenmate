@@ -12,6 +12,7 @@ import { usePlantProgressPhotos } from '../hooks/usePlantProgressPhotos';
 import { useHarvestLog } from '../hooks/useHarvestLog';
 import { useUserStore } from '../stores/userStore';
 import { supabase, PLANT_PHOTOS_BUCKET } from '../lib/supabase';
+import { compressImage } from '../lib/imageCrop';
 import { notifyError, notifySuccess } from '../lib/errorHandling';
 import { CATEGORY_META, STATUS_META, CARE_ACTION_META, PLANT_SOURCE_OPTIONS } from '../lib/plantMeta';
 import { getNextWateringDate, getNextFeedingDate, formatDate, formatDateTime } from '../lib/careSchedule';
@@ -234,10 +235,11 @@ function PlantDetail() {
     setActionError(null);
 
     try {
-      const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
+      const compressed = await compressImage(file);
+      const path = `${userId}/${crypto.randomUUID()}-${compressed.name}`;
       const { error: uploadError } = await supabase.storage
         .from(PLANT_PHOTOS_BUCKET)
-        .upload(path, file);
+        .upload(path, compressed);
 
       if (uploadError) {
         setActionError(uploadError.message);

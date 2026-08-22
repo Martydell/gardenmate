@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { X } from 'lucide-react';
 import { supabase, PLANT_PHOTOS_BUCKET } from '../../lib/supabase';
+import { compressImage } from '../../lib/imageCrop';
 import { useUserStore } from '../../stores/userStore';
 import {
   COMMON_PLANT_NAME_SUGGESTIONS,
@@ -140,10 +141,11 @@ function AddPlantModal({
     setIsUploadingPhoto(true);
     setPhotoError(null);
 
-    const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
+    const compressed = await compressImage(file);
+    const path = `${userId}/${crypto.randomUUID()}-${compressed.name}`;
     const { error: uploadError } = await supabase.storage
       .from(PLANT_PHOTOS_BUCKET)
-      .upload(path, file);
+      .upload(path, compressed);
 
     if (uploadError) {
       setPhotoError(uploadError.message);

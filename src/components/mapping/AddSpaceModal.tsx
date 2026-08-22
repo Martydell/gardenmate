@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Check, ScanSearch, X } from 'lucide-react';
 import { supabase, SPACE_PHOTOS_BUCKET } from '../../lib/supabase';
+import { compressImage } from '../../lib/imageCrop';
 import { useUserStore } from '../../stores/userStore';
 import { usePlants } from '../../hooks/usePlants';
 import { SPACE_TYPE_META, SPACE_TYPE_OPTIONS, plantCategoryForSpaceType } from '../../lib/spaceMeta';
@@ -129,10 +130,11 @@ function AddSpaceModal({ open, onClose, onAdd, space, onUpdate }: AddSpaceModalP
     setIsUploadingPhoto(true);
     setPhotoError(null);
 
-    const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
+    const compressed = await compressImage(file);
+    const path = `${userId}/${crypto.randomUUID()}-${compressed.name}`;
     const { error: uploadError } = await supabase.storage
       .from(SPACE_PHOTOS_BUCKET)
-      .upload(path, file);
+      .upload(path, compressed);
 
     if (uploadError) {
       setPhotoError(uploadError.message);
@@ -141,7 +143,7 @@ function AddSpaceModal({ open, onClose, onAdd, space, onUpdate }: AddSpaceModalP
     }
 
     const { data } = supabase.storage.from(SPACE_PHOTOS_BUCKET).getPublicUrl(path);
-    updateForm({ photoUrl: data.publicUrl, photoFile: file });
+    updateForm({ photoUrl: data.publicUrl, photoFile: compressed });
     setIsUploadingPhoto(false);
   }
 

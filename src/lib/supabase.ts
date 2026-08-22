@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './errorHandling';
+import { compressImage } from './imageCrop';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -29,8 +30,9 @@ export const IDENTIFY_PHOTOS_BUCKET = 'identify-photos';
 // this one.
 
 export async function uploadPlantPhoto(userId: string, file: File): Promise<string | null> {
-  const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
-  const { error } = await supabase.storage.from(PLANT_PHOTOS_BUCKET).upload(path, file);
+  const compressed = await compressImage(file);
+  const path = `${userId}/${crypto.randomUUID()}-${compressed.name}`;
+  const { error } = await supabase.storage.from(PLANT_PHOTOS_BUCKET).upload(path, compressed);
   if (error) {
     notifyError(error.message);
     return null;
@@ -40,8 +42,9 @@ export async function uploadPlantPhoto(userId: string, file: File): Promise<stri
 }
 
 export async function uploadAvatarPhoto(userId: string, file: File): Promise<string | null> {
-  const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
-  const { error } = await supabase.storage.from(AVATAR_PHOTOS_BUCKET).upload(path, file);
+  const compressed = await compressImage(file);
+  const path = `${userId}/${crypto.randomUUID()}-${compressed.name}`;
+  const { error } = await supabase.storage.from(AVATAR_PHOTOS_BUCKET).upload(path, compressed);
   if (error) {
     notifyError(error.message);
     return null;
@@ -51,8 +54,9 @@ export async function uploadAvatarPhoto(userId: string, file: File): Promise<str
 }
 
 export async function uploadSpacePhoto(userId: string, file: File): Promise<string | null> {
-  const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
-  const { error } = await supabase.storage.from(SPACE_PHOTOS_BUCKET).upload(path, file);
+  const compressed = await compressImage(file);
+  const path = `${userId}/${crypto.randomUUID()}-${compressed.name}`;
+  const { error } = await supabase.storage.from(SPACE_PHOTOS_BUCKET).upload(path, compressed);
   if (error) {
     notifyError(error.message);
     return null;
@@ -62,8 +66,9 @@ export async function uploadSpacePhoto(userId: string, file: File): Promise<stri
 }
 
 export async function uploadIdentifyPhoto(userId: string, file: File): Promise<string | null> {
-  const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
-  const { error } = await supabase.storage.from(IDENTIFY_PHOTOS_BUCKET).upload(path, file);
+  const compressed = await compressImage(file);
+  const path = `${userId}/${crypto.randomUUID()}-${compressed.name}`;
+  const { error } = await supabase.storage.from(IDENTIFY_PHOTOS_BUCKET).upload(path, compressed);
   if (error) {
     notifyError(error.message);
     return null;

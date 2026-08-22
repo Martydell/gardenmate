@@ -62,19 +62,22 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.origin === self.location.origin) {
+    // Network-first, not cache-first: the app shell (index.html + hashed
+    // JS/CSS) changes on every deploy, but this service worker's own code
+    // usually doesn't — so browsers rarely see it as "updated" and would
+    // otherwise keep serving whatever got cached on a user's very first
+    // visit indefinitely. Always try the network so a redeploy is visible
+    // immediately; only fall back to the cache when actually offline.
     event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request)
-          .then((response) => {
-            if (response.ok) {
-              const clone = response.clone();
-              caches.open(APP_SHELL_CACHE).then((cache) => cache.put(request, clone));
-            }
-            return response;
-          })
-          .catch(async () => (await caches.match('/index.html')) ?? Response.error());
-      }),
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(APP_SHELL_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(async () => (await caches.match(request)) ?? (await caches.match('/index.html')) ?? Response.error()),
     );
   }
 });

@@ -8,6 +8,8 @@ import AddPhotoAngleModal from './AddPhotoAngleModal';
 import PlantPinPopup from './PlantPinPopup';
 import type { GardenSpace, Plant, SpacePhotoAngle, SpacePhotoAnglePin } from '../../types';
 
+const MAX_PHOTO_ANGLES = 6;
+
 function angleDisplayLabel(angle: SpacePhotoAngle): string {
   return angle.label === 'Custom' ? angle.custom_label || 'Custom' : angle.label;
 }
@@ -168,20 +170,28 @@ function PhotoAnglesTab({ space }: PhotoAnglesTabProps) {
               </span>
             </button>
           ))}
-          <button
-            type="button"
-            onClick={() => setIsAddOpen(true)}
-            className="flex h-28 w-28 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-neutral-300 text-xs font-medium text-neutral-500 dark:border-neutral-700"
-          >
-            <Plus className="h-5 w-5" />
-            Add Angle
-          </button>
+          {angles.length < MAX_PHOTO_ANGLES && (
+            <button
+              type="button"
+              onClick={() => setIsAddOpen(true)}
+              className="flex h-28 w-28 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-neutral-300 text-xs font-medium text-neutral-500 dark:border-neutral-700"
+            >
+              <Plus className="h-5 w-5" />
+              Add Angle
+            </button>
+          )}
         </div>
       )}
 
       {!isLoading && angles.length === 0 && (
         <p className="py-4 text-center text-sm text-neutral-500">
           Photograph this space from a few directions, then pin your plants onto each view.
+        </p>
+      )}
+
+      {!isLoading && angles.length >= MAX_PHOTO_ANGLES && (
+        <p className="pt-2 text-center text-xs text-neutral-400">
+          Maximum of {MAX_PHOTO_ANGLES} photo angles per space — delete one to add another.
         </p>
       )}
 

@@ -9,6 +9,8 @@ import { notifyError, notifySuccess } from '../../lib/errorHandling';
 import type { NewPlantInput } from '../../hooks/usePlants';
 import type { Plant, PlantCategory } from '../../types';
 
+export type PhotoSource = { type: 'file'; file: File } | { type: 'url'; url: string };
+
 interface Candidate {
   id: string;
   previewUrl: string;
@@ -16,6 +18,7 @@ interface Candidate {
   name: string;
   probability: number;
   included: boolean;
+  foundInCount: number;
 }
 
 type Phase = 'detecting' | 'review' | 'no-results' | 'saving';
@@ -23,62 +26,112 @@ type Phase = 'detecting' | 'review' | 'no-results' | 'saving';
 interface MultiPlantIdentifyModalProps {
   open: boolean;
   onClose: () => void;
-  sourceFile: File | null;
+  sources: PhotoSource[];
   onAdd: (input: NewPlantInput) => Promise<Plant | null>;
   defaultCategory?: PlantCategory;
+}
+
+async function sourceToFile(source: PhotoSource): Promise<File | null> {
+  if (source.type === 'file') return source.file;
+  try {
+    const response = await fetch(source.url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new File([blob], `photo-${crypto.randomUUID()}.jpg`, { type: blob.type || 'image/jpeg' });
+  } catch {
+    return null;
+  }
+}
+
+// Plant.id gives us a species name per detected region, not a stable
+// identity for "this exact plant" across separate photos — so duplicates
+// across multiple photos of the same space are detected by matching names,
+// not by recognizing the same physical plant. Two different individuals of
+// the same species will merge into one candidate; that's a known trade-off
+// of scanning several photos at once rather than a bug.
+function dedupeByName(raw: Candidate[]): Candidate[] {
+  const byName = new Map<string, Candidate>();
+  for (const candidate of raw) {
+    const key = candidate.name.trim().toLowerCase();
+    const existing = byName.get(key);
+    if (!existing) {
+      byName.set(key, { ...candidate, foundInCount: 1 });
+    } else if (candidate.probability > existing.probability) {
+      byName.set(key, { ...candidate, foundInCount: existing.foundInCount + 1 });
+    } else {
+      byName.set(key, { ...existing, foundInCount: existing.foundInCount + 1 });
+    }
+  }
+  return Array.from(byName.values());
 }
 
 function MultiPlantIdentifyModal({
   open,
   onClose,
-  sourceFile,
+  sources,
   onAdd,
   defaultCategory = 'outdoor',
 }: MultiPlantIdentifyModalProps) {
   const userId = useUserStore((state) => state.user?.id);
   const hasVisionKey = Boolean(import.meta.env.VITE_GOOGLE_VISION_API_KEY);
   const [phase, setPhase] = useState<Phase>('detecting');
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [savingCount, setSavingCount] = useState<{ done: number; total: number } | null>(null);
 
   useEffect(() => {
-    if (!open || !sourceFile || !hasVisionKey) return;
+    if (!open || sources.length === 0 || !hasVisionKey) return;
 
     let cancelled = false;
     setPhase('detecting');
     setCandidates([]);
+    setProgress({ done: 0, total: sources.length });
 
     async function run() {
-      const regions = await detectPlantRegions(sourceFile!);
-      if (cancelled) return;
-
       const found: Candidate[] = [];
-      for (const region of regions) {
-        const cropped = await cropImageRegion(sourceFile!, region.box);
-        const result = await identifyPlant(cropped);
+
+      for (const source of sources) {
+        const file = await sourceToFile(source);
         if (cancelled) return;
-        if (result) {
-          found.push({
-            id: crypto.randomUUID(),
-            previewUrl: URL.createObjectURL(cropped),
-            croppedFile: cropped,
-            name: result.name,
-            probability: result.probability,
-            included: true,
-          });
+        if (file) {
+          const regions = await detectPlantRegions(file);
+          if (cancelled) return;
+
+          for (const region of regions) {
+            const cropped = await cropImageRegion(file, region.box);
+            const result = await identifyPlant(cropped);
+            if (cancelled) return;
+            if (result) {
+              found.push({
+                id: crypto.randomUUID(),
+                previewUrl: URL.createObjectURL(cropped),
+                croppedFile: cropped,
+                name: result.name,
+                probability: result.probability,
+                included: true,
+                foundInCount: 1,
+              });
+            }
+          }
         }
+        setProgress((prev) => (prev ? { ...prev, done: prev.done + 1 } : prev));
       }
 
       if (cancelled) return;
-      setCandidates(found);
-      setPhase(found.length > 0 ? 'review' : 'no-results');
+      const deduped = dedupeByName(found);
+      setCandidates(deduped);
+      setPhase(deduped.length > 0 ? 'review' : 'no-results');
     }
 
     run();
     return () => {
       cancelled = true;
     };
-  }, [open, sourceFile, hasVisionKey]);
+    // sources is a fresh array each render from callers; comparing by length
+    // + open avoids re-running the scan every render while still re-running
+    // when the caller actually passes new photos.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, sources.length, hasVisionKey]);
 
   function updateCandidate(id: string, patch: Partial<Candidate>) {
     setCandidates((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
@@ -87,6 +140,7 @@ function MultiPlantIdentifyModal({
   function resetAndClose() {
     setCandidates([]);
     setSavingCount(null);
+    setProgress(null);
     onClose();
   }
 
@@ -150,7 +204,9 @@ function MultiPlantIdentifyModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Identify plants in photo</h2>
+          <h2 className="text-xl font-semibold">
+            Identify plants in {sources.length > 1 ? `${sources.length} photos` : 'photo'}
+          </h2>
           {phase !== 'saving' && (
             <button
               type="button"
@@ -176,7 +232,10 @@ function MultiPlantIdentifyModal({
         {hasVisionKey && phase === 'detecting' && (
           <div className="flex flex-col items-center gap-3 py-10 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
-            <p className="text-sm text-neutral-500">Scanning photo for plants…</p>
+            <p className="text-sm text-neutral-500">
+              Scanning{progress && sources.length > 1 ? ` photo ${progress.done + 1} of ${progress.total}` : ''}{' '}
+              for plants…
+            </p>
           </div>
         )}
 
@@ -184,8 +243,9 @@ function MultiPlantIdentifyModal({
           <div className="flex flex-col items-center gap-3 py-10 text-center">
             <span className="text-4xl">🌱</span>
             <p className="text-sm text-neutral-500">
-              Couldn't confidently identify any individual plants in this photo. Try a clearer or
-              closer-up photo, or add plants manually.
+              Couldn't confidently identify any individual plants in{' '}
+              {sources.length > 1 ? 'these photos' : 'this photo'}. Try a clearer or closer-up photo, or
+              add plants manually.
             </p>
           </div>
         )}
@@ -222,6 +282,7 @@ function MultiPlantIdentifyModal({
                     />
                     <p className="text-xs text-neutral-500">
                       {Math.round(candidate.probability * 100)}% confident
+                      {candidate.foundInCount > 1 ? ` · seen in ${candidate.foundInCount} photos` : ''}
                     </p>
                   </div>
                   <label className="flex shrink-0 items-center gap-1.5 pt-1 text-xs font-medium">

@@ -33,13 +33,46 @@ function initialFormFor(type: GardenSpaceType): FormState {
   };
 }
 
+function spaceToFormState(space: GardenSpace): FormState {
+  const category = SPACE_TYPE_META[space.type].templateCategory;
+  const firstTemplate = SPACE_TEMPLATES.find((t) => t.category === category)!;
+  const background = (space.canvas_json as { background?: Record<string, unknown> } | null)?.background;
+
+  if (background?.type === 'photo' && typeof background.url === 'string') {
+    return {
+      name: space.name,
+      type: space.type,
+      backgroundMode: 'photo',
+      templateId: firstTemplate.id,
+      photoUrl: background.url,
+      photoFile: null,
+    };
+  }
+
+  const templateId =
+    background?.type === 'template' && typeof background.templateId === 'string'
+      ? (background.templateId as TemplateId)
+      : firstTemplate.id;
+
+  return {
+    name: space.name,
+    type: space.type,
+    backgroundMode: 'template',
+    templateId,
+    photoUrl: null,
+    photoFile: null,
+  };
+}
+
 interface AddSpaceModalProps {
   open: boolean;
   onClose: () => void;
   onAdd: (input: NewSpaceInput) => Promise<GardenSpace | null>;
+  space?: GardenSpace | null;
+  onUpdate?: (id: string, updates: Partial<GardenSpace>) => Promise<GardenSpace | null>;
 }
 
-function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
+function AddSpaceModal({ open, onClose, onAdd, space, onUpdate }: AddSpaceModalProps) {
   const userId = useUserStore((state) => state.user?.id);
   const { addPlant } = usePlants();
   const [form, setForm] = useState<FormState>(() => initialFormFor('indoor_room'));
@@ -50,11 +83,13 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isIdentifyOpen, setIsIdentifyOpen] = useState(false);
 
-  const [syncedOpen, setSyncedOpen] = useState(open);
-  if (open !== syncedOpen) {
-    setSyncedOpen(open);
+  const isEditMode = Boolean(space);
+
+  const [syncedFor, setSyncedFor] = useState({ open, space });
+  if (open !== syncedFor.open || space !== syncedFor.space) {
+    setSyncedFor({ open, space });
     if (open) {
-      setForm(initialFormFor('indoor_room'));
+      setForm(space ? spaceToFormState(space) : initialFormFor('indoor_room'));
       setNameError(null);
       setSubmitError(null);
       setPhotoError(null);
@@ -125,17 +160,32 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
         ? { type: 'photo' as const, url: form.photoUrl }
         : { type: 'template' as const, templateId: form.templateId };
 
-    const result = await onAdd({
-      name: form.name.trim(),
-      type: form.type,
-      canvas_json: { version: 1, background, irrigationVisible: false, fabric: null },
-      photos: form.photoUrl ? [form.photoUrl] : [],
-    });
+    // Editing preserves the rest of canvas_json (fabric pin positions,
+    // irrigation overlay, etc.) — only the background and top-level fields
+    // change, so a name/photo edit never wipes out existing pin placement.
+    const result =
+      isEditMode && space
+        ? await onUpdate?.(space.id, {
+            name: form.name.trim(),
+            type: form.type,
+            canvas_json: {
+              ...((space.canvas_json as Record<string, unknown> | null) ?? {}),
+              version: 1,
+              background,
+            },
+            photos: form.photoUrl ? [form.photoUrl] : space.photos,
+          })
+        : await onAdd({
+            name: form.name.trim(),
+            type: form.type,
+            canvas_json: { version: 1, background, irrigationVisible: false, fabric: null },
+            photos: form.photoUrl ? [form.photoUrl] : [],
+          });
 
     setIsSubmitting(false);
 
     if (!result) {
-      setSubmitError('Something went wrong creating this space. Please try again.');
+      setSubmitError(`Something went wrong ${isEditMode ? 'updating' : 'creating'} this space. Please try again.`);
       return;
     }
 
@@ -161,7 +211,7 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Add a space</h2>
+          <h2 className="text-xl font-semibold">{isEditMode ? 'Edit space' : 'Add a space'}</h2>
           <button
             type="button"
             onClick={resetAndClose}
@@ -308,7 +358,7 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
             disabled={isSubmitting || isUploadingPhoto}
             className="w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:opacity-60"
           >
-            {isSubmitting ? 'Creating…' : 'Create'}
+            {isSubmitting ? (isEditMode ? 'Saving…' : 'Creating…') : isEditMode ? 'Save changes' : 'Create'}
           </button>
         </form>
       </div>
@@ -317,7 +367,7 @@ function AddSpaceModal({ open, onClose, onAdd }: AddSpaceModalProps) {
     <MultiPlantIdentifyModal
       open={isIdentifyOpen}
       onClose={() => setIsIdentifyOpen(false)}
-      sourceFile={form.photoFile}
+      sources={form.photoFile ? [{ type: 'file', file: form.photoFile }] : []}
       onAdd={addPlant}
       defaultCategory={plantCategoryForSpaceType(form.type)}
     />

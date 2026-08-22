@@ -197,7 +197,7 @@ function AddPhotoAngleModal({ open, onClose, onAdd, defaultPlantCategory }: AddP
     <MultiPlantIdentifyModal
       open={isIdentifyOpen}
       onClose={() => setIsIdentifyOpen(false)}
-      sourceFile={file}
+      sources={file ? [{ type: 'file', file }] : []}
       onAdd={addPlant}
       defaultCategory={defaultPlantCategory}
     />

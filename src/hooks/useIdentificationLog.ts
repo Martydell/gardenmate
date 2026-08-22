@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUserStore } from '../stores/userStore';
+import { notifyError } from '../lib/errorHandling';
 import type { IdentificationLog } from '../types';
 
 export function useIdentificationLog() {
@@ -45,12 +46,14 @@ export function useIdentificationLog() {
 
         if (insertError) {
           setError(insertError.message);
+          notifyError(insertError.message);
           return null;
         }
         setLogs((prev) => [data, ...prev]);
         return data as IdentificationLog;
       } catch {
         setError('Something went wrong saving this identification.');
+        notifyError();
         return null;
       }
     },

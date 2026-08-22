@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Sun } from 'lucide-react';
-import { searchPlants, getPlantDetails } from '../../lib/perenual';
+import { searchPlantsResilient, getPlantDetails } from '../../lib/perenual';
 import { deriveCareInfo } from '../../lib/careInfo';
 import type { CareInfo } from '../../lib/careInfo';
 import type { PetSafety } from '../../types';
@@ -164,7 +164,7 @@ function CareInfoCard({
 
       let id = speciesId;
       if (!id && trimmedName) {
-        const results = await searchPlants(trimmedName);
+        const results = await searchPlantsResilient(trimmedName);
         id = results[0]?.id;
       }
 

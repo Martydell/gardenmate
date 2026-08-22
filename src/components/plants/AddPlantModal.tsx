@@ -69,8 +69,11 @@ interface AddPlantModalProps {
   onAdd: (input: NewPlantInput) => Promise<Plant | null>;
   onUpdate?: (id: string, updates: Partial<Plant>) => Promise<Plant | null>;
   // Pre-fills a fresh (non-edit) form — e.g. from an Identify result — with
-  // a name/photo already known rather than starting blank.
-  initialValues?: { commonName?: string; coverPhotoUrl?: string | null };
+  // a name/photo already known rather than starting blank. scientificName
+  // matters beyond just filling the field: CareInfoCard on Plant Detail
+  // looks up Perenual data by plant.scientific_name, so leaving it unset
+  // here means the saved plant's Care Info tab comes back empty.
+  initialValues?: { commonName?: string; scientificName?: string; coverPhotoUrl?: string | null };
   // Saves the new plant straight to the wishlist instead of My Plants.
   defaultIsWishlist?: boolean;
 }
@@ -107,6 +110,7 @@ function AddPlantModal({
           : {
               ...initialFormState,
               commonName: initialValues?.commonName ?? initialFormState.commonName,
+              scientificName: initialValues?.scientificName ?? initialFormState.scientificName,
               coverPhotoUrl: initialValues?.coverPhotoUrl ?? initialFormState.coverPhotoUrl,
             },
       );

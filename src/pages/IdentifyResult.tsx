@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { usePlants } from '../hooks/usePlants';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { formatDate } from '../lib/careSchedule';
+import { searchPlantsResilient } from '../lib/perenual';
 import CareInfoCard from '../components/plants/CareInfoCard';
 import AddPlantModal from '../components/plants/AddPlantModal';
 import type { IdentificationLog } from '../types';
@@ -19,6 +20,10 @@ function IdentifyResult() {
   const [log, setLog] = useState<IdentificationLog | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [saveMode, setSaveMode] = useState<'plants' | 'wishlist' | null>(null);
+  // Plant.id's result name is often a common name, not the botanical one —
+  // resolved separately via Perenual so the saved plant's scientific_name
+  // is populated and its Care Info tab isn't stuck showing "not found".
+  const [scientificName, setScientificName] = useState<string | null>(null);
 
   useDocumentTitle(log ? `${log.result_name} — GardenMate` : 'Identify — GardenMate');
 
@@ -45,6 +50,21 @@ function IdentifyResult() {
       cancelled = true;
     };
   }, [logId]);
+
+  useEffect(() => {
+    if (!log) return;
+    let cancelled = false;
+
+    searchPlantsResilient(log.result_name).then((results) => {
+      if (cancelled) return;
+      const match = results[0]?.scientific_name?.[0];
+      if (match) setScientificName(match);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [log]);
 
   if (status === 'loading') {
     return (
@@ -106,7 +126,7 @@ function IdentifyResult() {
 
         <div className="mt-6">
           <h2 className="mb-2 font-semibold">Plant Info</h2>
-          <CareInfoCard scientificName={log.result_name} />
+          <CareInfoCard scientificName={scientificName ?? log.result_name} />
         </div>
       </div>
 
@@ -114,7 +134,11 @@ function IdentifyResult() {
         open={saveMode !== null}
         onClose={() => setSaveMode(null)}
         onAdd={addPlant}
-        initialValues={{ commonName: log.result_name, coverPhotoUrl: log.photo_url }}
+        initialValues={{
+          commonName: log.result_name,
+          scientificName: scientificName ?? undefined,
+          coverPhotoUrl: log.photo_url,
+        }}
         defaultIsWishlist={saveMode === 'wishlist'}
       />
     </div>

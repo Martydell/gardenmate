@@ -35,6 +35,28 @@ export async function searchPlants(query: string): Promise<PerenualSpeciesSummar
   }
 }
 
+// Perenual's search only matches when the query is a substring of its
+// stored common/scientific name, so a multi-word name like "Chilli de
+// Cayenne" can come back empty even though "Cayenne" alone would hit (it's
+// indexed as "cayenne pepper"). Retry word-by-word, longest first, as a
+// best-effort fallback before giving up.
+export async function searchPlantsResilient(query: string): Promise<PerenualSpeciesSummary[]> {
+  const direct = await searchPlants(query);
+  if (direct.length > 0) return direct;
+
+  const words = query
+    .split(/\s+/)
+    .filter((word) => word.length > 2)
+    .sort((a, b) => b.length - a.length);
+
+  for (const word of words) {
+    const results = await searchPlants(word);
+    if (results.length > 0) return results;
+  }
+
+  return [];
+}
+
 export async function getPlantDetails(id: number): Promise<PerenualSpeciesDetails | null> {
   const apiKey = getApiKey();
   if (!apiKey) return null;

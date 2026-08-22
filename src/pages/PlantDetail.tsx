@@ -485,7 +485,7 @@ function PlantDetail() {
       {activeTab === 'care-info' && (
         <div className="px-4 py-4">
           <CareInfoCard
-            scientificName={plant.scientific_name}
+            scientificName={plant.scientific_name || plant.common_name}
             currentPetSafety={plant.pet_safety}
             onPetSafetyResolved={(safety) => updatePlant(plant.id, { pet_safety: safety })}
           />

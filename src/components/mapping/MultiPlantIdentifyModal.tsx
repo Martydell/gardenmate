@@ -19,6 +19,11 @@ interface Candidate {
   probability: number;
   included: boolean;
   foundInCount: number;
+  // Vision found a plant-shaped region here, but Plant.id couldn't
+  // confidently name it — shown with a blank, editable name rather than
+  // dropped, since a region Vision detected is still worth surfacing even
+  // when species identification fails.
+  identified: boolean;
 }
 
 type Phase = 'detecting' | 'review' | 'no-results' | 'saving';
@@ -51,7 +56,14 @@ async function sourceToFile(source: PhotoSource): Promise<File | null> {
 // of scanning several photos at once rather than a bug.
 function dedupeByName(raw: Candidate[]): Candidate[] {
   const byName = new Map<string, Candidate>();
+  const unidentified: Candidate[] = [];
   for (const candidate of raw) {
+    // Unidentified regions have no name to key on — each stays its own
+    // entry rather than collapsing into one "" bucket.
+    if (!candidate.identified) {
+      unidentified.push({ ...candidate, foundInCount: 1 });
+      continue;
+    }
     const key = candidate.name.trim().toLowerCase();
     const existing = byName.get(key);
     if (!existing) {
@@ -62,7 +74,7 @@ function dedupeByName(raw: Candidate[]): Candidate[] {
       byName.set(key, { ...existing, foundInCount: existing.foundInCount + 1 });
     }
   }
-  return Array.from(byName.values());
+  return [...Array.from(byName.values()), ...unidentified];
 }
 
 function MultiPlantIdentifyModal({
@@ -101,17 +113,16 @@ function MultiPlantIdentifyModal({
             const cropped = await cropImageRegion(file, region.box);
             const result = await identifyPlant(cropped);
             if (cancelled) return;
-            if (result) {
-              found.push({
-                id: crypto.randomUUID(),
-                previewUrl: URL.createObjectURL(cropped),
-                croppedFile: cropped,
-                name: result.name,
-                probability: result.probability,
-                included: true,
-                foundInCount: 1,
-              });
-            }
+            found.push({
+              id: crypto.randomUUID(),
+              previewUrl: URL.createObjectURL(cropped),
+              croppedFile: cropped,
+              name: result?.name ?? '',
+              probability: result?.probability ?? 0,
+              included: true,
+              foundInCount: 1,
+              identified: Boolean(result),
+            });
           }
         }
         setProgress((prev) => (prev ? { ...prev, done: prev.done + 1 } : prev));
@@ -188,7 +199,7 @@ function MultiPlantIdentifyModal({
     resetAndClose();
   }
 
-  const includedCount = candidates.filter((c) => c.included).length;
+  const includedCount = candidates.filter((c) => c.included && c.name.trim()).length;
 
   return (
     <div
@@ -253,8 +264,10 @@ function MultiPlantIdentifyModal({
         {hasVisionKey && (phase === 'review' || phase === 'saving') && (
           <div className="space-y-4">
             <p className="text-sm text-neutral-500">
-              Found {candidates.length} plant{candidates.length === 1 ? '' : 's'}. Review and edit the
-              names, then confirm which ones to add.
+              Found {candidates.length} plant{candidates.length === 1 ? '' : 's'}.
+              {candidates.some((c) => !c.identified)
+                ? " Some couldn't be confidently named — type a name for those to include them."
+                : ' Review and edit the names, then confirm which ones to add.'}
             </p>
 
             <ul className="space-y-3">
@@ -262,9 +275,11 @@ function MultiPlantIdentifyModal({
                 <li
                   key={candidate.id}
                   className={`flex items-start gap-3 rounded-xl border p-3 ${
-                    candidate.included
-                      ? 'border-neutral-200 dark:border-neutral-800'
-                      : 'border-neutral-100 opacity-50 dark:border-neutral-900'
+                    !candidate.included
+                      ? 'border-neutral-100 opacity-50 dark:border-neutral-900'
+                      : candidate.identified
+                        ? 'border-neutral-200 dark:border-neutral-800'
+                        : 'border-amber-300 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20'
                   }`}
                 >
                   <img
@@ -278,11 +293,14 @@ function MultiPlantIdentifyModal({
                       value={candidate.name}
                       onChange={(e) => updateCandidate(candidate.id, { name: e.target.value })}
                       disabled={phase === 'saving'}
+                      placeholder={candidate.identified ? undefined : 'Type plant name…'}
                       className="w-full rounded-lg border border-neutral-300 px-2.5 py-1.5 text-sm font-medium focus:border-green-600 focus:outline-none dark:border-neutral-700 dark:bg-neutral-950"
                     />
                     <p className="text-xs text-neutral-500">
-                      {Math.round(candidate.probability * 100)}% confident
-                      {candidate.foundInCount > 1 ? ` · seen in ${candidate.foundInCount} photos` : ''}
+                      {candidate.identified
+                        ? `${Math.round(candidate.probability * 100)}% confident`
+                        : "Couldn't confidently identify this one"}
+                      {candidate.foundInCount > 1 ? ` · matched ${candidate.foundInCount} times` : ''}
                     </p>
                   </div>
                   <label className="flex shrink-0 items-center gap-1.5 pt-1 text-xs font-medium">

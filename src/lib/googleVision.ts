@@ -52,7 +52,7 @@ export async function detectPlantRegions(file: File): Promise<DetectedPlantRegio
         requests: [
           {
             image: { content: base64 },
-            features: [{ type: 'OBJECT_LOCALIZATION', maxResults: 20 }],
+            features: [{ type: 'OBJECT_LOCALIZATION', maxResults: 40 }],
           },
         ],
       }),

@@ -1,3 +1,4 @@
+# Continuous deployment linked 2026-09-02: pushes to main now auto-deploy.
 [build]
   command = "npm run build"
   publish = "dist"
